@@ -1,0 +1,44 @@
+name: 'Terraform'
+
+on:
+    push:
+      branches: [ "master" ]
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+
+    - name: Terraform Plan
+      env:
+        TF_VAR_bucket_name: ${{ secrets.bucket_name }}
+        TF_VAR_content_version: ${{ secrets.content_version }}
+        TF_VAR_table_name: ${{ secrets.table_name }}
+        TF_VAR_hash_key: ${{ secrets.hash_key }}
+        TF_VAR_function_name: ${{ secrets.function_name }}
+      run: terraform plan -no-color
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+      env:
+        TF_VAR_bucket_name: ${{ secrets.bucket_name }}
+        TF_VAR_table_name: ${{ secrets.table_name }}
+        TF_VAR_hash_key: ${{ secrets.hash_key }}
+        TF_VAR_function_name: ${{ secrets.function_name }}
+      run: terraform apply -auto-approve -no-color

@@ -38,7 +38,11 @@ jobs:
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       env:
         TF_VAR_bucket_name: ${{ secrets.bucket_name }}
+        TF_VAR_content_version: ${{ secrets.content_version }}
         TF_VAR_table_name: ${{ secrets.table_name }}
         TF_VAR_hash_key: ${{ secrets.hash_key }}
         TF_VAR_function_name: ${{ secrets.function_name }}
       run: terraform apply -auto-approve -no-color
+
+    - name: Terraform Destroy
+      run: terraform destroy -auto-approve -no-color
